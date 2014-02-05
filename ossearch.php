@@ -50,7 +50,7 @@ $osmain = "opensim";
 
 $dbaddress = "localhost";
 $dbuser = "root";
-$dbpass = "l0v3sux";
+$dbpass = "";
 $sitedb = "test";
 
 // grid address and name
