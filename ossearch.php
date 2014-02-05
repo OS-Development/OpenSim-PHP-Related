@@ -6,7 +6,7 @@ error_reporting(0);
 * @start   May 26, 2013
 * @author  Christopher Strachan
 * @license http://www.opensource.org/licenses/gpl-license.php
-* @version 2.1.0
+* @version 2.1.1
 * @link    http://www.littletech.net
 *** *** *** *** *** ***
 * This program is free software; you can redistribute it and/or modify
@@ -50,7 +50,7 @@ $osmain = "opensim";
 
 $dbaddress = "localhost";
 $dbuser = "root";
-$dbpass = "";
+$dbpass = "l0v3sux";
 $sitedb = "test";
 
 // grid address and name
@@ -76,29 +76,29 @@ global $connect;
 
 	function getosuser($FirstName, $LastName) {
 	global $connect;
-	$q = mysqli_query($connect, "SELECT * FROM opensim.UserAccounts WHERE FirstName = '$FirstName' AND LastName = '$LastName'") or die("Error: ".mysqli_error($connect));
+	$q = mysqli_query($connect, "SELECT * FROM $osmain.useraccounts WHERE FirstName = '$FirstName' AND LastName = '$LastName'") or die("Error: ".mysqli_error($connect));
 	$r = mysqli_fetch_array($q);
 	return $r;
 	}
 
 	function uuid2name($uuid) {
 	global $connect;
-	$q = mysqli_query($connect, "SELECT * FROM opensim.UserAccounts WHERE PrincipalID = '$uuid'") or die("Error: ".mysqli_error($connect));
+	$q = mysqli_query($connect, "SELECT * FROM $osmain.useraccounts WHERE PrincipalID = '$uuid'") or die("Error: ".mysqli_error($connect));
 	$r = mysqli_fetch_array($q);
 	return $r;
 	}
 
 	function regionname($UUID) {
 	global $connect;
-	$getregionq = mysqli_query($connect, "SELECT * FROM regions WHERE regionuuid = '$UUID'") or die("Error: ".mysqli_error($connect));
+	$getregionq = mysqli_query($connect, "SELECT * FROM $osmain.regions WHERE uuid = '$UUID'") or die("Error: ".mysqli_error($connect));
 	$regionrow = mysqli_fetch_array($getregionq);
-	$r = $regionrow['regionname'];
+	$r = $regionrow['regionName'];
 	return $r;
 	}
 
 	function regionip($UUID) {
 	global $connect;
-	$getregionq2 = mysqli_query($connect, "SELECT * FROM opensim.regions WHERE uuid = '$UUID'") or die("Error: ".mysqli_error($connect));
+	$getregionq2 = mysqli_query($connect, "SELECT * FROM $osmain.regions WHERE uuid = '$UUID'") or die("Error: ".mysqli_error($connect));
 	$regionrow2 = mysqli_fetch_array($getregionq2);
 	$r = $regionrow2['serverIP'];
 	return $r;
@@ -106,7 +106,7 @@ global $connect;
 
 	function online($uuid) {
 	global $connect;
-	$oq = mysqli_query($connect, "SELECT * FROM opensim.GridUser WHERE UserID = '$uuid'") or die("Error: ".mysqli_error($connect));
+	$oq = mysqli_query($connect, "SELECT * FROM $osmain.griduser WHERE UserID = '$uuid'") or die("Error: ".mysqli_error($connect));
 	$or = mysqli_fetch_array($oq);
 	$online = $or['Online'];
 	return $online;
@@ -114,7 +114,7 @@ global $connect;
 
 	function userspersim($sim) {
 	global $connect;
-	$simq = mysqli_query($connect, "SELECT * FROM opensim.Presence WHERE RegionID = '$sim'") or die("Error: ".mysqli_error($connect));
+	$simq = mysqli_query($connect, "SELECT * FROM $osmain.presence WHERE RegionID = '$sim'") or die("Error: ".mysqli_error($connect));
 	$count = mysqli_num_rows($simq);
 	return $count;
 	}
@@ -338,9 +338,9 @@ $regionid = $parrow['regionUUID'];
 $parcelname = $parrow['parcelname'];
 $loc = $parrow['landingpoint'];
 
-$simq = mysqli_query($connect, "SELECT * FROM $osmod.regions WHERE regionuuid = '$regionid'") or die("Error: ".mysqli_error($connect));
+$simq = mysqli_query($connect, "SELECT * FROM $osmain.regions WHERE uuid = '$regionid'") or die("Error: ".mysqli_error($connect));
 $simr = mysqli_fetch_array($simq);
-$sim = $simr['regionname'];
+$sim = $simr['regionName'];
 
 $locr = str_replace("/", ",", $loc);
 
@@ -592,7 +592,7 @@ echo "  <div class='panel panel-default'>
 
 }
 if ($type == "people" || !$type) {
-$pplq = mysqli_query($connect, "SELECT * FROM $osmain.UserAccounts WHERE FirstName LIKE '%$search%' OR LastName LIKE '%$search%' ORDER BY `Created` ASC LIMIT 0,100") or die("Error: ".mysqli_error($connect));
+$pplq = mysqli_query($connect, "SELECT * FROM $osmain.useraccounts WHERE FirstName LIKE '%$search%' OR LastName LIKE '%$search%' ORDER BY `Created` ASC LIMIT 0,100") or die("Error: ".mysqli_error($connect));
 while ($pplnum = mysqli_fetch_array($pplq)) {
 
 $uuid = $pplnum['PrincipalID'];
