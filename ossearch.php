@@ -6,7 +6,7 @@ error_reporting(0);
 * @start   May 26, 2013
 * @author  Christopher Strachan
 * @license http://www.opensource.org/licenses/gpl-license.php
-* @version 2.1.1
+* @version 2.1.1a
 * @link    http://www.littletech.net
 *** *** *** *** *** ***
 * This program is free software; you can redistribute it and/or modify
@@ -51,7 +51,7 @@ $osmain = "opensim";
 $dbaddress = "localhost";
 $dbuser = "root";
 $dbpass = "";
-$sitedb = "test";
+$sitedb = "site";
 
 // grid address and name
 $address = "http://yourdomain.com";
@@ -59,63 +59,71 @@ $grid_name = "Your Grid";
 
 $now = time();
 
-$search = $_GET['search'];
-$type = $_GET['type'];
-$m = $_GET['m'];
-
 // You can remove these two lines if your using a cms or have your own way to connect to the database.
-$connect = mysqli_connect($dbaddress, $dbuser, $dbpass, $sitedb);
+$mysqli = new mysqli($dbaddress, $dbuser, $dbpass, $sitedb);
 if (mysqli_connect_errno()) {
     echo "Connect failed";
     exit();
 }
 
-global $connect;
+global $mysqli;
 
 // your welcome to cut and paste these functions into your own system and modify them.
 
 	function getosuser($FirstName, $LastName) {
-	global $connect;
-	$q = mysqli_query($connect, "SELECT * FROM $osmain.useraccounts WHERE FirstName = '$FirstName' AND LastName = '$LastName'") or die("Error: ".mysqli_error($connect));
-	$r = mysqli_fetch_array($q);
+	global $mysqli;
+	global $osmain;
+	$q = $mysqli->query("SELECT * FROM $osmain.useraccounts WHERE FirstName = '$FirstName' AND LastName = '$LastName'");
+	$r = $q->fetch_array(MYSQLI_BOTH);
+	$q->free();
 	return $r;
 	}
 
 	function uuid2name($uuid) {
-	global $connect;
-	$q = mysqli_query($connect, "SELECT * FROM $osmain.useraccounts WHERE PrincipalID = '$uuid'") or die("Error: ".mysqli_error($connect));
-	$r = mysqli_fetch_array($q);
-	return $r;
+	global $mysqli;
+	global $osmain;
+	$q2 = $mysqli->query("SELECT * FROM $osmain.useraccounts WHERE PrincipalID = '$uuid'");
+	$r2 = $q2->fetch_array(MYSQLI_BOTH);
+	$q2->free();
+	return $r2;
 	}
 
-	function regionname($UUID) {
-	global $connect;
-	$getregionq = mysqli_query($connect, "SELECT * FROM $osmain.regions WHERE uuid = '$UUID'") or die("Error: ".mysqli_error($connect));
-	$regionrow = mysqli_fetch_array($getregionq);
-	$r = $regionrow['regionName'];
-	return $r;
+	function regionname($ruuid) {
+	global $mysqli;
+	global $osmain;
+	$getregionq = $mysqli->query("SELECT * FROM $osmain.regions WHERE uuid = '$ruuid'");
+	$regionrow = $getregionq->fetch_array(MYSQLI_BOTH);
+	$r3 = $regionrow['regionName'];
+	$getregionq->free();
+	return $r3;
 	}
 
 	function regionip($UUID) {
-	global $connect;
-	$getregionq2 = mysqli_query($connect, "SELECT * FROM $osmain.regions WHERE uuid = '$UUID'") or die("Error: ".mysqli_error($connect));
-	$regionrow2 = mysqli_fetch_array($getregionq2);
-	$r = $regionrow2['serverIP'];
-	return $r;
+	global $mysqli;
+	global $osmain;
+	$getregionq2 = $mysqli->query("SELECT * FROM $osmain.regions WHERE uuid = '$UUID'");
+	$regionrow2 = $getregionq2->fetch_array(MYSQLI_BOTH);
+	$r4 = $regionrow2['serverIP'];
+	$getregionq2->free();
+	return $r4;
 	}
 
 	function online($uuid) {
-	global $connect;
-	$oq = mysqli_query($connect, "SELECT * FROM $osmain.griduser WHERE UserID = '$uuid'") or die("Error: ".mysqli_error($connect));
-	$or = mysqli_fetch_array($oq);
+	global $mysqli;
+	global $osmain;
+	$oq = $mysqli->query("SELECT * FROM $osmain.griduser WHERE UserID = '$uuid'");
+	$or = $oq->fetch_array(MYSQLI_BOTH);
 	$online = $or['Online'];
+	$oq->free();
 	return $online;
 	}
 
 	function userspersim($sim) {
-	global $connect;
-	$simq = mysqli_query($connect, "SELECT * FROM $osmain.presence WHERE RegionID = '$sim'") or die("Error: ".mysqli_error($connect));
-	$count = mysqli_num_rows($simq);
+	global $mysqli;
+	global $osmain;
+	$simq = $mysqli->query("SELECT * FROM $osmain.presence WHERE RegionID = '$sim'");
+	$count = $simq->num_rows;
+	$simq->close();
 	return $count;
 	}
 
@@ -167,33 +175,41 @@ global $connect;
 	return $r;
 	}
 
-$searchlink = $search;
-
 // only mess with this function if you know wtf your doing.
 // screwing this up could (WILL) result in a hackable websearch page.
 function sqlprotection ($s) {
-global $connect;
+global $mysqli;
 $s = htmlspecialchars(stripslashes($s));
-$s = mysqli_real_escape_string($connect, $s);
+$s = rawurlencode($s);
 $s = str_replace(array("1=1", ";", "-", "script", "SELECT", "INSERT", "UPDATE", "DELETE", "UNION", "OR"), array("", "", "", "", "", "", "", "", "", ""), $s);
 return $s;
 }
 
-$search = sqlprotection($search);
-$s = strtoupper($s);
-$s = strip_tags($s);
-$s = trim ($s);
+if (isset($_GET['search'])) {
+	$search = sqlprotection($_GET['search']);
+	$search = strtoupper($search);
+	$search = strip_tags($search);
+	$search = trim ($search);
+	$searchlink = $search;
+}else{
+	$search = "";
+	$searchlink = "everything";
+}
+if (isset($_GET['type'])) {
+	$type = $_GET['type'];
+}else{
+	$type = "";
+}
+if (isset($_GET['m'])) {
+	$m = $_GET['m'];
+}else{
+	$m = "";
+}
 
 if ($search) {
 $placeholder = "Searching for $search";
 }else if (!$search) {
 $placeholder = "Search";
-}
-
-if (!$usermature || $usermature <= '200') {
-$um = "2";
-}else if ($usermature >= '199') {
-$um = "3";
 }
 
 $select = "selected";
@@ -279,32 +295,32 @@ $ADULT = "<span class='label label-danger'>A</span>";
 <TR VALIGN="top" style="valign: top;">
 <TD ALIGN="left" STYLE="width:150px;">
   <ul class="nav nav-pills nav-stacked">
-<li <?php if (!$type) { echo "class='active'"; } ?>><a href="<?php echo "$address/ossearch.php?search=$searchlink&type=&m=$m"; ?>">Everything</a></li>
+<li <?php if (!$type) { echo "class='active'"; } ?>><a href="<?php echo "ossearch.php?search=$searchlink&type=&m=$m"; ?>">Everything</a></li>
 
 
-<li <?php if ($type == "classifieds") { echo "class='active'"; } ?>><a href="<?php echo "$address/ossearch.php?search=$searchlink&type=classifieds&m=$m"; ?>">Classifieds</a></li>
+<li <?php if ($type == "classifieds") { echo "class='active'"; } ?>><a href="<?php echo "ossearch.php?search=$searchlink&type=classifieds&m=$m"; ?>">Classifieds</a></li>
 
 
-<li <?php if ($type == "destinations") { echo "class='active'"; } ?>><a href="<?php echo "$address/ossearch.php?search=$searchlink&type=destinations&m=$m"; ?>">Destinations</a></li>
+<li <?php if ($type == "destinations") { echo "class='active'"; } ?>><a href="<?php echo "ossearch.php?search=$searchlink&type=destinations&m=$m"; ?>">Destinations</a></li>
 
 
-<li <?php if ($type == "events") { echo "class='active'"; } ?>><a href="<?php echo "$address/ossearch.php?search=$searchlink&type=events&m=$m"; ?>">Events</a></li>
+<li <?php if ($type == "events") { echo "class='active'"; } ?>><a href="<?php echo "ossearch.php?search=$searchlink&type=events&m=$m"; ?>">Events</a></li>
 <?php if ($type == "events") { echo $eventcat; } ?>
 
-<li <?php if ($type == "groups") { echo "class='active'"; } ?>><a href="<?php echo "$address/ossearch.php?search=$searchlink&type=groups&m=$m"; ?>">Groups</a></li>
+<li <?php if ($type == "groups") { echo "class='active'"; } ?>><a href="<?php echo "ossearch.php?search=$searchlink&type=groups&m=$m"; ?>">Groups</a></li>
 <?php
 if ($type == "groups") {
 echo "Group Test";
 }
 ?>
 
-<li <?php if ($type == "4sale") { echo "class='active'"; } ?>><a href="<?php echo "$address/ossearch.php?search=$searchlink&type=4sale&m=$m"; ?>">Land & Rentals</a></li>
+<li <?php if ($type == "4sale") { echo "class='active'"; } ?>><a href="<?php echo "ossearch.php?search=$searchlink&type=4sale&m=$m"; ?>">Land & Rentals</a></li>
 
 
-<li <?php if ($type == "people") { echo "class='active'"; } ?>><a href="<?php echo "$address/ossearch.php?search=$searchlink&type=people&m=$m"; ?>">People</a></li>
+<li <?php if ($type == "people") { echo "class='active'"; } ?>><a href="<?php echo "ossearch.php?search=$searchlink&type=people&m=$m"; ?>">People</a></li>
 
 
-<li <?php if ($type == "places") { echo "class='active'"; } ?>><a href="<?php echo "$address/ossearch.php?search=$searchlink&type=places&m=$m"; ?>">Places</a></li>
+<li <?php if ($type == "places") { echo "class='active'"; } ?>><a href="<?php echo "ossearch.php?search=$searchlink&type=places&m=$m"; ?>">Places</a></li>
 <?php
 if ($type == "places") {
 echo "Test";
@@ -316,8 +332,8 @@ echo "Test";
 <div class="panel-group" id="accordion" style="width:600px; height: auto;">
 <?php
 if ($type == "classifieds" || !$type) {
-$cq = mysqli_query($connect, "SELECT * FROM $osmod.classifieds WHERE name LIKE '%$search%' OR description LIKE '%$search%' AND creationdate < '$now' AND expirationdate > '$now' AND classifiedflags < '$m' ORDER BY 'creationdate' DESC LIMIT 0,100") or die("Error: ".mysqli_error($connect));
-while ($cn = mysqli_fetch_array($cq, MYSQLI_ASSOC)) {
+$cq = $mysqli->query("SELECT * FROM $osmod.classifieds WHERE name LIKE '%$search%' OR description LIKE '%$search%' AND creationdate < '$now' AND expirationdate > '$now' AND classifiedflags < '$m' ORDER BY 'creationdate' DESC LIMIT 0,100");
+while ($cn = $cq->fetch_array(MYSQLI_BOTH)) {
 $creatoruuid = $cn['creatoruuid'];
 $creationdate = $cn['creationdate'];
 $expirationdate = $cn['expirationdate'];
@@ -332,17 +348,23 @@ $classifiedflags = $cn['classifiedflags'];
 $creationdate = date("M d Y h:i a T",$creationdate);
 $expirationdate = date("M d Y h:i a T",$expirationdate);
 
-$parq = mysqli_query($connect, "SELECT * FROM $osmod.allparcels WHERE parcelUUID = '$parceluuid'") or die("Error: ".mysqli_error($connect));
-$parrow = mysqli_fetch_array($parq);
+$parq = $mysqli->query("SELECT * FROM $osmod.allparcels WHERE parcelUUID = '$parceluuid'");
+$parrow = $parq->fetch_array(MYSQLI_BOTH);
 $regionid = $parrow['regionUUID'];
 $parcelname = $parrow['parcelname'];
 $loc = $parrow['landingpoint'];
+$parq->free();
 
-$simq = mysqli_query($connect, "SELECT * FROM $osmain.regions WHERE uuid = '$regionid'") or die("Error: ".mysqli_error($connect));
-$simr = mysqli_fetch_array($simq);
+$simq = $mysqli->query("SELECT * FROM $osmain.regions WHERE uuid = '$regionid'");
+$simr = $simq->fetch_array(MYSQLI_BOTH);
 $sim = $simr['regionName'];
+$simq->free();
 
-$locr = str_replace("/", ",", $loc);
+if (!$loc) {
+	$locr = "128,128,25";
+}else{
+	$locr = str_replace("/", ",", $loc);
+}
 
 $FL = uuid2name($creatoruuid);
 $FName = $FL['FirstName'];
@@ -384,11 +406,11 @@ $description
   </div>
 ";
 }
-
+$cq->free();
 }
 if ($type == "destinations" || !$type) {
-$popq = mysqli_query($connect, "SELECT * FROM $osmod.popularplaces WHERE name LIKE '%$search%' AND mature < '$m' ORDER BY `dwell` DESC LIMIT 0,100") or die("Error: ".mysqli_error($connect));
-while ($popn = mysqli_fetch_array($popq, MYSQLI_ASSOC)) {
+$popq = $mysqli->query("SELECT * FROM $osmod.popularplaces WHERE name LIKE '%$search%' AND mature < '$m' ORDER BY `dwell` DESC LIMIT 0,100");
+while ($popn = $popq->fetch_array(MYSQLI_BOTH)) {
 $parcelUUID = $popn['parcelUUID'];
 $name = $popn['name'];
 $mature = $popn['mature'];
@@ -401,35 +423,25 @@ $mature = "$MATURE";
 $mature = "$ADULT";
 }
 
-$parq = mysqli_query($connect, "SELECT * FROM $osmod.parcels WHERE parcelUUID = '$parcelUUID'") or die("Error: ".mysqli_error($connect));
-$parrow = mysqli_fetch_array($parq);
+$parq = $mysqli->query("SELECT * FROM $osmod.parcels WHERE parcelUUID = '$parcelUUID'");
+$parrow = $parq->fetch_array(MYSQLI_BOTH);
 $reguuid = $parrow['regionUUID'];
 $landing = $parrow['landingpoint'];
 $desc = $parrow['description'];
+$parq->free();
 $simname = regionname($reguuid);
 $usersonregion = userspersim($reguuid);
-
-$regionip = regionip($reguuid);
-$fopen = fopen("http://".$regionip."/osparcels/snapshot.php?regionid=".$reguuid."&parcelid=".$parcelUUID, "r");
-$snap = fread($fopen,80);
-fclose($fopen);
-if ($snap == "00000000-0000-0000-0000-000000000000" || !$snap) {
-$pic = "<img src='$address/webassets/asset.php?id=243e3d7b-66ac-47f0-aca9-74bb932c2404&format=PNG' class='pull-right' width='75' height='75'>";
-}else{
-$pic = "<img src='$address/webassets/asset.php?id=$snap&format=PNG' class='pull-right' width='75' height='75'>";
-}
 
 echo "  <div class='panel panel-default'>
     <div class='panel-heading'>
       <h4 class='panel-title'>
       <a class='accordion-toggle' data-toggle='collapse' data-parent='#accordion' href='#Dest$parcelUUID'>
-	<B>$simname</B>
+	<B>$name</B>
       </a>
       </h4>
     </div>
     <div id='Dest$parcelUUID' class='panel-collapse collapse'>
       <div class='panel-body'>
-$pic
 $desc<br>
 <B>Mature Rating:</B> $mature<br>
 <B>Avatars on region:</B> $usersonregion
@@ -439,11 +451,11 @@ $desc<br>
   </div>";
 
 }
-
+$popq->free();
 }
 if ($type == "events" || !$type) {
-$evq = mysqli_query($connect, "SELECT * FROM $osmod.events WHERE name LIKE '%$search%' OR description LIKE '%$search%' AND dateUTC > $now AND eventflags < '$m' ORDER BY `dateUTC` LIMIT 0,100") or die("Error: ".mysqli_error($connect));
-while ($evnum = mysqli_fetch_array($evq, MYSQLI_ASSOC)) {
+$evq = $mysqli->query("SELECT * FROM $osmod.events WHERE name LIKE '%$search%' OR description LIKE '%$search%' AND dateUTC > $now AND eventflags < '$m' ORDER BY `dateUTC` LIMIT 0,100");
+while ($evnum = $evq->fetch_array(MYSQLI_BOTH)) {
 
 $creator = $evnum['creatoruuid'];
 $time = $evnum['dateUTC'];
@@ -488,11 +500,11 @@ $eventinfo<br>
 }
 
 }
-
+$evq->free();
 }
 if ($type == "groups" || !$type) {
-$grpq = mysqli_query($connect, "SELECT * FROM $osmain.os_groups_groups WHERE Name LIKE '%$search%' AND ShowInList = '1' ORDER BY `Name` ASC LIMIT 0,100") or die("Error: ".mysqli_error($connect));
-while ($grpn = mysqli_fetch_array($grpq, MYSQLI_ASSOC)) {
+$grpq = $mysqli->query("SELECT * FROM $osmain.os_groups_groups WHERE Name LIKE '%$search%' AND ShowInList = '1' ORDER BY `Name` ASC LIMIT 0,100");
+while ($grpn = $grpq->fetch_array(MYSQLI_BOTH)) {
 
 $GroupID = $grpn['GroupID'];
 $Name = $grpn['Name'];
@@ -507,8 +519,9 @@ $FL = uuid2name($FounderID);
 $FName = $FL['FirstName'];
 $LName = $FL['LastName'];
 
-$gmq = mysqli_query($connect, "SELECT * FROM $osmain.os_groups_membership WHERE GroupID = '$GroupID'") or die("Error: ".mysqli_error($connect));
-$gmcount = mysqli_num_rows($gmq);
+$gmq = $mysqli->query("SELECT * FROM $osmain.os_groups_membership WHERE GroupID = '$GroupID'");
+$gmcount = $gmq->num_rows;
+$gmq->close();
 
 if ($InsigniaID == "00000000-0000-0000-0000-000000000000" || !$InsigniaID) {
 $pic = "<img src='$address/webassets/asset.php?id=243e3d7b-66ac-47f0-aca9-74bb932c2404&format=PNG' class='pull-right' width='75' height='75'>";
@@ -554,10 +567,11 @@ Enrollment: $join
   </div>
 ";
 }
+$grpq->free();
 }
 if ($type == "4sale" || !$type) {
-$forsaleq = mysqli_query($connect, "SELECT * FROM $osmod.parcelsales WHERE parcelname LIKE '%$search%' AND mature < '$m' ORDER BY `saleprice` ASC LIMIT 0,100") or die("Error: ".mysqli_error($connect));
-while ($forsnum = mysqli_fetch_array($forsaleq)) {
+$forsaleq = $mysqli->query("SELECT * FROM $osmod.parcelsales WHERE parcelname LIKE '%$search%' AND mature < '$m' ORDER BY `saleprice` ASC LIMIT 0,100");
+while ($forsnum = $forsaleq->fetch_array(MYSQLI_BOTH)) {
 
 $regionUUID = $forsnum['regionUUID'];
 $parcelname = $forsnum['parcelname'];
@@ -589,11 +603,11 @@ echo "  <div class='panel panel-default'>
   </div>
 ";
 }
-
+$forsaleq->free();
 }
 if ($type == "people" || !$type) {
-$pplq = mysqli_query($connect, "SELECT * FROM $osmain.useraccounts WHERE FirstName LIKE '%$search%' OR LastName LIKE '%$search%' ORDER BY `Created` ASC LIMIT 0,100") or die("Error: ".mysqli_error($connect));
-while ($pplnum = mysqli_fetch_array($pplq)) {
+$pplq = $mysqli->query("SELECT * FROM $osmain.useraccounts WHERE FirstName LIKE '%$search%' OR LastName LIKE '%$search%' ORDER BY `Created` ASC LIMIT 0,100");
+while ($pplnum = $pplq->fetch_array(MYSQLI_BOTH)) {
 
 $uuid = $pplnum['PrincipalID'];
 $sFirst = $pplnum['FirstName'];
@@ -612,8 +626,8 @@ $onoff = "offlinedot.png";
 $onoff = "onlinedot.png";
 }
 
-$profq = mysqli_query($connect, "SELECT * FROM $osmod.userprofile WHERE useruuid = '$uuid' AND profileMaturePublish < '$m'") or die("Error: ".mysqli_error($connect));
-$prow = mysqli_fetch_array($profq);
+$profq = $mysqli->query("SELECT * FROM $osmod.userprofile WHERE useruuid = '$uuid' AND profileMaturePublish < '$m'");
+$prow = $profq->fetch_array(MYSQLI_BOTH);
 
 $show = $prow['profileAllowPublish'];
 if ($show == "0") {
@@ -621,6 +635,8 @@ if ($show == "0") {
 $MaturePublish = $prow['profileMaturePublish'];
 $abouttext = $prow['profileAboutText'];
 $fakepic = $prow['profileImage'];
+
+$profq->free();
 
 if ($abouttext) {
 $abouttext = htmlspecialchars_decode($abouttext, ENT_QUOTES);
@@ -668,11 +684,11 @@ $fakelife
 }
 
 }
-
+$pplq->free();
 }
 if ($type == "places" || !$type) {
-$placeq = mysqli_query($connect, "SELECT * FROM $osmod.parcels WHERE parcelname LIKE '%$search%' OR description LIKE '%$search%' AND public = 'true' ORDER BY `parcelUUID` ASC LIMIT 0,100") or die("Error: ".mysqli_error($connect));
-while ($placenum = mysqli_fetch_array($placeq)) {
+$placeq = $mysqli->query("SELECT * FROM $osmod.parcels WHERE parcelname LIKE '%$search%' OR description LIKE '%$search%' AND public = 'true' ORDER BY `parcelUUID` ASC LIMIT 0,100");
+while ($placenum = $placeq->fetch_array(MYSQLI_BOTH)) {
 
 $regionUUID = $placenum['regionUUID'];
 $parcelname = $placenum['parcelname'];
@@ -696,16 +712,6 @@ $mat = "$MATURE";
 if ($mature == "Adult") {
 $mr = "3";
 $mat = "$ADULT";
-}
-
-$regionip = regionip($regionUUID);
-$fopen = fopen("http://".$regionip."/osparcels/snapshot.php?regionid=".$regionUUID."&parcelid=".$parcelUUID, "r");
-$snap = fread($fopen,80);
-fclose($fopen);
-if ($snap == "00000000-0000-0000-0000-000000000000" || !$snap) {
-$pic = "<img src='$address/webassets/asset.php?id=243e3d7b-66ac-47f0-aca9-74bb932c2404&format=PNG' class='pull-right' width='75' height='75'>";
-}else{
-$pic = "<img src='$address/webassets/asset.php?id=$snap&format=PNG' class='pull-right' width='75' height='75'>";
 }
 
 if ($mr <= $m) {
@@ -735,7 +741,7 @@ $description<br>
 }
 
 }
-
+$placeq->free();
 }
 ?>
 </div>
@@ -760,5 +766,5 @@ $(document).ready(function(){
 </body>
 </html>
 <?php
-mysqli_close($connect);
+$mysqli->close();
 ?>
