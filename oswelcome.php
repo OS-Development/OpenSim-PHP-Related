@@ -6,7 +6,7 @@ error_reporting(0); // this is just so stupid errors are not displayed
 * @start   February 04, 2014
 * @author  Christopher Strachan
 * @license http://www.opensource.org/licenses/gpl-license.php
-* @version 1.0.0
+* @version 1.0.1
 * @link    http://www.littletech.net
 *** *** *** *** *** ***
 * This program is free software; you can redistribute it and/or modify
@@ -27,19 +27,25 @@ error_reporting(0); // this is just so stupid errors are not displayed
 *** *** *** *** *** ***/
 $now = time(); // the time now in seconds since Jan 1 1970.
 
-$grid_name = "Your Grid";
-$logoimg = "";
-$bgimg = "";
+$grid_name = "Your Grid"; // ignore this if using a logo image
+$logoimg = ""; // if there is a image here it will replace $grid_name on the page.
 $twittername = "";
+$dir = "bgimg"; // directory aka folder where your background images aka screenshots will go
 
-$loginuri = ""; // This is the address found in Robust.ini for Grid, Opensim.ini for Standalone.
-$ip2robust = ""; // IP or domain to the robust server. This is used to see if Robust.exe (or OpenSim.exe for Standalone) is online.
-$port2robust = ""; // 8002 for Grid Robust.exe, 9000 for Standalone OpenSim.exe
+$loginuri = "http://localhost:8002/"; // This is the address found in Robust.ini for Grid, Opensim.ini for Standalone.
+$ip2robust = "localhost"; // IP or domain to the robust server. This is used to see if Robust.exe (or OpenSim.exe for Standalone) is online.
+$port2robust = "8002"; // 8002 for Grid Robust.exe, 9000 for Standalone OpenSim.exe
+/*****
+* if you are just forwarding a subdomain to your robust ip to be used as a loginURI,
+* please still put the ip in $ip2robust
+* this is so this script can do a direct check to see if robust is online or not.
+* the ip must be the same as in your robust.ini for LoginURI
+*****/
 
 // Database connect info to the robust database.
 $db_host = "localhost";
-$db_user = "username";
-$db_pass = "password";
+$db_user = "root";
+$db_pass = "";
 $db_port = "3306";
 
 // where accounts are stored. ie, gridusers and useraccounts. Just need these for counting records, nothing else.
@@ -53,8 +59,6 @@ if (mysqli_connect_errno()) {
     echo "Connect failed";
     exit();
 }
-
-
 
 if ($fp = fsockopen($ip2robust, $port2robust, $errno, $errstr, 1)) {
 	$online = TRUE;
@@ -88,10 +92,26 @@ $regionq = $mysqli->query("SELECT * FROM regions");
 $regionc = $regionq->num_rows;
 $regionq->close();
 
+if (is_dir($dir))
+{
+	if ($dh = opendir($dir))
+	{
+		while (false !== ($file = readdir($dh)))
+		{
+			if ($file == '.' || $file == '..') { 
+			}else{
+			$jbgimg .= "'" . $file . "', ";
+			$cbgimg = $file;
+			}
+		}
+	closedir($dh);
+	}
+}
+
 if ($logoimg) {
 	$logo = "<img src='$logoimg' border='0'>";
 }else{
-	$logo = "<table class='table'><tr><td><h1>" . $grid_name . "</h1></td></tr></table>";
+	$logo = "<h1>" . $grid_name . "</h1>";
 }
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -112,14 +132,22 @@ if ($logoimg) {
 <!-- You can change this to your own bootstrap file -->
 <link href="http://www.littletech.net/css/bootstrap.css" rel="stylesheet">
 
+<script>
+var newBg = [<?php echo $jbgimg; ?>];
+var path="<?php echo $dir; ?>/";
+var i = 0;
+var rotateBg = setInterval(function(){
+    $('body').css('backgroundImage' ,  "url('" +path+newBg[i]+ "')");
+    i++;
+}, 5000);
+</script>
+
 <style>
 body
 {
-<?php if ($bgimg) { ?>
-background-image:url('<?php echo $bgimg; ?>');
+background-image: url('<?php echo $dir . "/" . $cbgimg; ?>');
 background-repeat: no-repeat;
 background-size: cover;
-<?php } ?>
 }
 .table
 {
@@ -198,7 +226,6 @@ overflow: hidden;
 		</a>
 		<?php } ?>
 	</div>
-</div>
 
 <script>
 !function(d,s,id) {
