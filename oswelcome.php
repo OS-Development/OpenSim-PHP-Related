@@ -97,6 +97,9 @@ while ($latestr = $latestq->fetch_array(MYSQLI_BOTH)) {
 }
 $latestq->close();
 
+$activeperc = $latestc / $totalc;
+$activepercent = $activeperc * 100;
+
 $hoursago = $now - 86400;
 $latest24q = $mysqli->query("SELECT * FROM GridUser WHERE Login > '$hoursago' AND Login != '0'");
 $latest24c = 0;
@@ -140,7 +143,7 @@ if ($logoimg) {
 }
 
 if ($_GET['api']) {
-	$apiarray = array('Status' => $onoff, "UsersOnline" => $online, 'TotalUsers' => $totalc, 'TotalRegions' => $regionc, 'TotalSingleRegions' => $totalsingleregions, 'Active30Days' => $latestc, 'Active24Hours' => $latest24c);
+	$apiarray = array('Status' => $onoff, "UsersOnline" => $online, 'TotalUsers' => $totalc, 'ActivePercent' => $activepercent, 'TotalRegions' => $regionc, 'TotalSingleRegions' => $totalsingleregions, 'Active30Days' => $latestc, 'Active24Hours' => $latest24c);
 	$api = $_GET['api'];
 	if ($api == "online") {
 		echo $onoff;
@@ -160,6 +163,9 @@ if ($_GET['api']) {
 	if ($api == "totalsingleregions" && $ShowStats) {
 		echo $totalsingleregions;
 	}
+	if ($api == "activepercent" && $ShowStats) {
+		echo $activepercent;
+	}
 	if ($api == "json") {
 		echo json_encode($apiarray);
 	}
@@ -167,7 +173,7 @@ if ($_GET['api']) {
 		echo xmlrpc_encode($apiarray);
 	}
 	if ($api == "lsl") {
-		echo $onoff."=".$online."=".$totalc."=".$regionc."=".$latest24c."=".$latestc."=".$totalsingleregions;
+		echo $onoff."=".$online."=".$totalc."=".$regionc."=".$latest24c."=".$latestc."=".$totalsingleregions."=".$activepercent;
 	}
 }else{
 $dir = "bgimg"; // directory aka folder where your background images aka screenshots will go
@@ -256,6 +262,7 @@ overflow: hidden;
 			Users in world: <?php echo $online; ?><br>
 			Online Last 30 days: <?php echo $latestc; ?><br>
 			Online Last 24 hours: <?php echo $latest24c; ?><br>
+			Active Percentage: <?php echo $activepercent; ?>%<br>
 			Total Users: <?php echo $totalc; ?><br>
 			Total Regions: <?php echo $regionc; ?> <small>(<?php echo $totalsingleregions; ?>*)</small><br>
 			<small>* Total count for all sims as if they were <?php echo $defsize." by ".$defsize; ?> meters</small>
