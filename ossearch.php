@@ -5,7 +5,7 @@
 * @start   May 26, 2013
 * @author  Christopher Strachan
 * @license http://www.opensource.org/licenses/gpl-license.php
-* @version 2.2.0
+* @version 2.2.0a
 * @updated Nov 30, 2015
 *** *** *** *** *** ***
 * This program is free software; you can redistribute it and/or modify
@@ -28,6 +28,8 @@
 * UPDATE Nov 30 2015
 * Updated the bootstrap to use Bootstrap and Jquery's CDN
 * Updated the link to webassets to use Hypergrid Portal's webasset system.
+* 2.2.0a
+* Forgot to add &format=img to the webassets, SORRY!
 */
 /*** *** *** *** *** ***
 * You are welcome to modify this page all you want and rename it.
@@ -385,9 +387,9 @@ $classifiedflags = "$ADULT";
 }
 
 if (!$snapshotuuid || $snapshotuuid == "00000000-0000-0000-0000-000000000000") {
-$pic = "<img src='http://hgport.me/webasset?asset_uri=".$asseturi."&asset=243e3d7b-66ac-47f0-aca9-74bb932c2404' class='pull-right' width='75' height='75'>";
+$pic = "<img src='http://hgport.me/webasset?asset_uri=".$asseturi."&asset=243e3d7b-66ac-47f0-aca9-74bb932c2404&format=img' class='pull-right' width='75' height='75'>";
 }else{
-$pic = "<img src='http://hgport.me/webasset?asset_uri=".$asseturi."&asset=".$snapshotuuid."' class='pull-right' width='75' height='75'>";
+$pic = "<img src='http://hgport.me/webasset?asset_uri=".$asseturi."&asset=".$snapshotuuid."&format=img' class='pull-right' width='75' height='75'>";
 }
 
 echo "  <div class='panel panel-default'>
@@ -530,9 +532,9 @@ $gmcount = $gmq->num_rows;
 $gmq->close();
 
 if ($InsigniaID == "00000000-0000-0000-0000-000000000000" || !$InsigniaID) {
-$pic = "<img src='http://hgport.me/webasset?asset_uri=".$asseturi."&asset=243e3d7b-66ac-47f0-aca9-74bb932c2404' class='pull-right' width='75' height='75'>";
+$pic = "<img src='http://hgport.me/webasset?asset_uri=".$asseturi."&asset=243e3d7b-66ac-47f0-aca9-74bb932c2404&format=img' class='pull-right' width='75' height='75'>";
 }else{
-$pic = "<img src='http://hgport.me/webasset?asset_uri=".$asseturi."&asset=".$InsigniaID."' class='pull-right' width='75' height='75'>";
+$pic = "<img src='http://hgport.me/webasset?asset_uri=".$asseturi."&asset=".$InsigniaID."&format=img' class='pull-right' width='75' height='75'>";
 }
 
 if ($OpenEnrollment == "1") {
@@ -664,9 +666,9 @@ $MaturePublish = "$ADULT";
 }
 
 if ($fakepic == "00000000-0000-0000-0000-000000000000" || !$fakepic) {
-$pic = "<img src='http://hgport.me/webasset?asset_uri=".$asseturi."&asset=243e3d7b-66ac-47f0-aca9-74bb932c2404' class='pull-right' width='75' height='75'>";
+$pic = "<img src='http://hgport.me/webasset?asset_uri=".$asseturi."&asset=243e3d7b-66ac-47f0-aca9-74bb932c2404&format=img' class='pull-right' width='75' height='75'>";
 }else{
-$pic = "<img src='http://hgport.me/webasset?asset_uri=".$asseturi."&asset=".$fakepic."' class='pull-right' width='75' height='75'>";
+$pic = "<img src='http://hgport.me/webasset?asset_uri=".$asseturi."&asset=".$fakepic."&format=img' class='pull-right' width='75' height='75'>";
 }
 
 echo "  <div class='panel panel-default'>
