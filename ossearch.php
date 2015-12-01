@@ -1,13 +1,12 @@
 <?php
-error_reporting(0);
 /*** *** *** *** *** ***
 * @package OpenSim Search page for viewers
 * @file    osviewersearch.php
 * @start   May 26, 2013
 * @author  Christopher Strachan
 * @license http://www.opensource.org/licenses/gpl-license.php
-* @version 2.1.1a
-* @link    http://www.littletech.net
+* @version 2.2.0
+* @updated Nov 30, 2015
 *** *** *** *** *** ***
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -25,7 +24,11 @@ error_reporting(0);
 *** *** *** *** *** ***
 * Comments are always before the code they are commenting.
 *** *** *** *** *** ***/
-
+/**
+* UPDATE Nov 30 2015
+* Updated the bootstrap to use Bootstrap and Jquery's CDN
+* Updated the link to webassets to use Hypergrid Portal's webasset system.
+*/
 /*** *** *** *** *** ***
 * You are welcome to modify this page all you want and rename it.
 * Bootstrap included in the header of this page to make it look better.
@@ -44,6 +47,7 @@ error_reporting(0);
 * The [QUERY] is what is sent to the page if someone searches from the search bar at the top right of most viewers.
 *** *** *** *** *** ***/
 
+error_reporting(0);
 // change these to work with your databases
 $osmod = "osmodules";
 $osmain = "opensim";
@@ -53,8 +57,11 @@ $dbuser = "root";
 $dbpass = "";
 $sitedb = "site";
 
+// Asset URI. This is so HGPort can fetch textures from your grid.
+$asseturi = "http://localhost:8003/assets/";
+
 // grid address and name
-$address = "http://yourdomain.com";
+$address = "http://yourgrid.com";
 $grid_name = "Your Grid";
 
 $now = time();
@@ -251,9 +258,8 @@ $ADULT = "<span class='label label-danger'>A</span>";
       <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
 
-<!-- Optional bootstrap style -->
-<link href="http://www.littletech.net/css/opensim/bootstrap.css" rel="stylesheet">
-<link href="http://www.littletech.net/css/opensim/bootstrap-theme.css" rel="stylesheet">
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
 
 </head>
 <body>
@@ -379,9 +385,9 @@ $classifiedflags = "$ADULT";
 }
 
 if (!$snapshotuuid || $snapshotuuid == "00000000-0000-0000-0000-000000000000") {
-$pic = "<img src='$address/webassets/asset.php?id=243e3d7b-66ac-47f0-aca9-74bb932c2404&format=PNG' class='pull-right' width='75' height='75'>";
+$pic = "<img src='http://hgport.me/webasset?asset_uri=".$asseturi."&asset=243e3d7b-66ac-47f0-aca9-74bb932c2404' class='pull-right' width='75' height='75'>";
 }else{
-$pic = "<img src='$address/webassets/asset.php?id=$snapshotuuid&format=PNG' class='pull-right' width='75' height='75'>";
+$pic = "<img src='http://hgport.me/webasset?asset_uri=".$asseturi."&asset=".$snapshotuuid."' class='pull-right' width='75' height='75'>";
 }
 
 echo "  <div class='panel panel-default'>
@@ -524,9 +530,9 @@ $gmcount = $gmq->num_rows;
 $gmq->close();
 
 if ($InsigniaID == "00000000-0000-0000-0000-000000000000" || !$InsigniaID) {
-$pic = "<img src='$address/webassets/asset.php?id=243e3d7b-66ac-47f0-aca9-74bb932c2404&format=PNG' class='pull-right' width='75' height='75'>";
+$pic = "<img src='http://hgport.me/webasset?asset_uri=".$asseturi."&asset=243e3d7b-66ac-47f0-aca9-74bb932c2404' class='pull-right' width='75' height='75'>";
 }else{
-$pic = "<img src='$address/webassets/asset.php?id=$InsigniaID&format=PNG' class='pull-right' width='75' height='75'>";
+$pic = "<img src='http://hgport.me/webasset?asset_uri=".$asseturi."&asset=".$InsigniaID."' class='pull-right' width='75' height='75'>";
 }
 
 if ($OpenEnrollment == "1") {
@@ -658,9 +664,9 @@ $MaturePublish = "$ADULT";
 }
 
 if ($fakepic == "00000000-0000-0000-0000-000000000000" || !$fakepic) {
-$pic = "<img src='$address/webassets/asset.php?id=243e3d7b-66ac-47f0-aca9-74bb932c2404&format=PNG' class='pull-right' width='75' height='75'>";
+$pic = "<img src='http://hgport.me/webasset?asset_uri=".$asseturi."&asset=243e3d7b-66ac-47f0-aca9-74bb932c2404' class='pull-right' width='75' height='75'>";
 }else{
-$pic = "<img src='$address/webassets/asset.php?id=$fakepic&format=PNG' class='pull-right' width='75' height='75'>";
+$pic = "<img src='http://hgport.me/webasset?asset_uri=".$asseturi."&asset=".$fakepic."' class='pull-right' width='75' height='75'>";
 }
 
 echo "  <div class='panel panel-default'>
@@ -761,8 +767,9 @@ $(document).ready(function(){
 });
 </script>
 
-<script src="http://www.littletech.net/js/jquery.js"></script>
-<script src="http://www.littletech.net/js/bootstrap.js"></script>
+<script src="https://code.jquery.com/jquery-2.1.4.js"></script>
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
 </body>
 </html>
 <?php
