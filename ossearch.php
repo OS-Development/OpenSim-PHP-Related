@@ -761,9 +761,9 @@ $placeq->free();
 $(document).ready(function(){
 	$('.dropdown-toggle').dropdown();
 	$('#tooltip').tooltip('show');
-	$(".accordion").collapse('toggle');
-	$('.collapse').collapse('toggle');
-	$('#modal').modal('toggle');
+	$(".accordion").collapse('hide');
+	$('.collapse').collapse('hide');
+	$('#modal').modal('hide');
 	$('.carousel').carousel({interval: 10000});
 	$('#tabs a:first').tab('show');
 });
