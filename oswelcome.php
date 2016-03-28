@@ -79,7 +79,16 @@ if ($online == TRUE) {
 
 $fiveago = $now - 300;
 $onlineq = $mysqli->query("SELECT * FROM Presence WHERE RegionID != '{$zw->nullkey}'");
-$online = $onlineq->num_rows;
+$online = 0;
+while ($onliner = $onlineq->fetch_array(MYSQLI_BOTH)) {
+	$onmuuid = $latestr['UserID'];
+	$onusermq = $mysqli->query("SELECT * FROM UserAccounts WHERE PrincipalID = '$onmuuid'");
+	$onusermn = $onusermq->num_rows;
+	if ($onusermn) {
+		$online++;
+	}
+}
+$onlineq->close();
 
 $totalq = $mysqli->query("SELECT * FROM UserAccounts");
 $totalc = $totalq->num_rows;
